@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Crawler Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .quotes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .quote {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .quote p {
+            margin-bottom: 10px;
+        }
+
+        .quote .author {
+            font-weight: bold;
+            color: #007BFF;
+        }
+
+        .quote .tags {
+            color: #555;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Web Crawler Frontend</h1>
+    <div class="container">
+        <p>Click the buttons below to crawl quotes from <strong>quotes.toscrape.com</strong>.</p>
+        
+        <button id="crawl-one-page">Crawl One Page</button>
+        <button id="crawl-all-pages">Crawl All Pages</button>
+
+        <div class="quotes-container" id="quotes-container"></div>
+    </div>
+
+    <script>
+        const crawlOnePageBtn = document.getElementById('crawl-one-page');
+        const crawlAllPagesBtn = document.getElementById('crawl-all-pages');
+        const quotesContainer = document.getElementById('quotes-container');
+
+        async function crawlOnePage() {
+            quotesContainer.innerHTML = '';
+            try {
+                const response = await fetch('/crawl');
+                const data = await response.json();
+                if (data.success) {
+                    displayQuotes(data.quotes);
+                } else {
+                    alert('Failed to crawl the website.');
+                }
+            } catch (error) {
+                alert('An error occurred while crawling.');
+            }
+        }
+
+        async function crawlAllPages() {
+            quotesContainer.innerHTML = '';
+            try {
+                const response = await fetch('/crawl-all');
+                const data = await response.json();
+                if (data.success) {
+                    displayQuotes(data.quotes);
+                } else {
+                    alert('Failed to crawl all pages.');
+                }
+            } catch (error) {
+                alert('An error occurred while crawling.');
+            }
+        }
+
+        function displayQuotes(quotes) {
+            quotesContainer.innerHTML = '';
+            quotes.forEach(quote => {
+                const quoteElement = document.createElement('div');
+                quoteElement.classList.add('quote');
+                quoteElement.innerHTML = `
+                    <p>${quote.text}</p>
+                    <p class="author">- ${quote.author}</p>
+                    <p class="tags">Tags: ${quote.tags.join(', ')}</p>
+                `;
+                quotesContainer.appendChild(quoteElement);
+            });
+        }
+
+        crawlOnePageBtn.addEventListener('click', crawlOnePage);
+        crawlAllPagesBtn.addEventListener('click', crawlAllPages);
+    </script>
+
+</body>
+</html>

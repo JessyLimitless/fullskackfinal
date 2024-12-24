@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>우산 대여 시스템</title>
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e0f7fa;
+      color: #3d3b3b;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh; 
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1 {
+      display: flex;
+      justify-content: space-between;
+      font-size: 21px;
+      color: #0277bd;
+      margin-bottom: 20px;
+      font-family: 'Pacifico', cursive;
+    }
+
+    .icon-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon {
+      cursor: pointer;
+      font-size: 24px;
+      background: linear-gradient(90deg, rgb(72, 105, 170) 0%, rgba(0, 90, 200, 1) 50%, rgba(0, 130, 255, 1) 100%);
+      -webkit-background-clip: text;
+      color: transparent;
+      transition: transform 0.3s;
+    }
+
+    .icon:hover {
+      transform: scale(1.2);
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"], input[type="email"], button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 4px;
+      width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #999;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(90deg, rgba(33, 150, 243, 1) 0%, rgba(3, 169, 244, 1) 50%, rgba(0, 188, 212, 1) 100%);
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, rgba(3, 169, 244, 1) 0%, rgba(0, 188, 212, 1) 50%, rgba(33, 150, 243, 1) 100%);
+    }
+
+    #viewRecords {
+      margin-top: 20px;
+      font-size: 16px;
+      background-color: #e1f5fe;
+      padding: 10px;
+      border-radius: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    #returnDetails {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #0277bd;
+      background-color: #e1f5fe;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .notification {
+      font-size: 16px;
+      color: #0277bd;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .available-umbrellas {
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 20px;
+      font-family: 'Roboto', sans-serif;
+      color: #737275;
+      text-align: center;
+    }
+
+    .available-umbrellas span {
+      font-size: 24px;
+      font-weight: 700;
+      color: red;
+    }
+
+    .green {
+      color: green;
+    }
+
+    .orange {
+      color: orange;
+    }
+
+    .red {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      Sharella
+      <div class="icon-container">
+        <span class="icon" id="settingsIcon">⚙️</span>
+        <span class="icon" id="trashIcon">🗑️</span>
+      </div>
+    </h1>
+
+    <div class="available-umbrellas">
+      대여 가능한 우산: <span id="availableUmbrellas">20</span>개
+    </div>
+
+    <form id="rentForm">
+      <input type="text" id="studentId" placeholder="학번 입력" required>
+      <input type="text" id="name" placeholder="이름 입력" required>
+      <input type="email" id="email" placeholder="이메일 입력" required>
+      <button type="submit" class="btn btn-primary">대여 신청</button>
+    </form>
+
+    <form id="viewForm">
+      <input type="text" id="viewStudentId" placeholder="대여 기록을 조회할 학번 입력" required>
+      <button type="submit" class="btn btn-secondary">대여 기록 조회</button>
+    </form>
+
+    <button id="returnButton" class="btn btn-success" style="display: none;">반납하기</button>
+
+    <div id="returnDetails"></div>
+
+    <div id="viewRecords"></div>
+
+    <div class="notification" id="notification"></div>
+  </div>
+
+  <script>
+    let isRecordsVisible = false;
+    let selectedStudentId = null;
+
+    // 대여 가능한 우산 개수 가져오기
+    async function updateAvailableUmbrellas() {
+      const response = await fetch('/umbrellas');
+      const data = await response.json();
+      document.getElementById('availableUmbrellas').innerText = data.availableUmbrellas;
+    }
+
+    updateAvailableUmbrellas();
+
+    // 대여 신청
+    document.getElementById('rentForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const studentId = document.getElementById('studentId').value;
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+
+      const response = await fetch('/rent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, name, email })
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert(result.message);
+        document.getElementById('notification').innerText = `반납 기일은 ${result.returnBy}입니다.`;
+        document.getElementById('notification').style.display = 'block';
+        updateAvailableUmbrellas();
+
+        // 반납 기일 초기화
+        setTimeout(() => {
+          document.getElementById('notification').style.display = 'none';
+        }, 5000);
+
+        document.getElementById('studentId').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('email').value = '';
+      } else {
+        alert('대여 신청에 실패했습니다.');
+      }
+    });
+
+    // 대여 기록 조회
+    document.getElementById('viewForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const studentId = document.getElementById('viewStudentId').value;
+      const response = await fetch(`/rental/${studentId}`);
+      const rental = await response.json();
+
+      if (response.ok) {
+        const returnDetails = `
+          학번: ${rental.studentId}<br>
+          이름: ${rental.name}<br>
+          이메일: ${rental.email}<br>
+          대여 시간: ${rental.rentedAt}<br>
+          반납 기한: ${rental.returnBy}<br>
+          상태: ${rental.isReturned ? '반납 완료' : '대여 중'}
+        `;
+        document.getElementById('returnDetails').innerHTML = returnDetails;
+        document.getElementById('returnDetails').style.display = 'block';
+
+        if (!rental.isReturned) {
+          document.getElementById('returnButton').style.display = 'block';
+          selectedStudentId = studentId;
+        } else {
+          document.getElementById('returnButton').style.display = 'none';
+        }
+      } else {
+        alert('대여 기록을 찾을 수 없습니다.');
+      }
+
+      document.getElementById('viewStudentId').value = '';
+    });
+
+    // 반납하기
+    document.getElementById('returnButton').addEventListener('click', async function() {
+      if (selectedStudentId) {
+        const response = await fetch('/return', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: selectedStudentId })
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert(result.message);
+          updateAvailableUmbrellas();
+          document.getElementById('returnDetails').innerHTML = '';
+          document.getElementById('returnButton').style.display = 'none';
+        } else {
+          alert('반납에 실패했습니다.');
+        }
+      }
+    });
+
+    // 대여 및 반납 기록 보기 (설정 이모티콘 클릭 시)
+    document.getElementById('settingsIcon').addEventListener('click', async function() {
+      if (isRecordsVisible) {
+        document.getElementById('viewRecords').style.display = 'none';
+        document.getElementById('viewRecords').innerHTML = '';  // 기록 숨기고 초기화
+        isRecordsVisible = false;
+      } else {
+        const response = await fetch('/rental');
+        const rentals = await response.json();
+        let rentalRecords = '';
+        let returnRecords = '';
+
+        rentals.forEach(rental => {
+          if (!rental.isReturned) {
+            rentalRecords += `
+              학번: ${rental.studentId}<br>
+              이름: ${rental.name}<br>
+              이메일: ${rental.email}<br>
+              대여 시간: ${rental.rentedAt}<br>
+              반납 기한: ${rental.returnBy}<br>
+              상태: 대여 중<br><br>
+            `;
+          } else {
+            returnRecords += `
+              학번: ${rental.studentId}<br>
+              이름: ${rental.name}<br>
+              이메일: ${rental.email}<br>
+              대여 시간: ${rental.rentedAt}<br>
+              반납 시간: ${rental.returnBy}<br>
+              상태: 반납 완료<br><br>
+            `;
+          }
+        });
+
+        let recordsHtml = `<h4>대여 중인 기록</h4>${rentalRecords}<h4>반납된 기록</h4>${returnRecords}`;
+        document.getElementById('viewRecords').innerHTML = recordsHtml;
+        document.getElementById('viewRecords').style.display = 'block';
+        isRecordsVisible = true;
+      }
+    });
+
+    // 대여 기록 초기화 (쓰레기통 이모티콘 클릭 시)
+    document.getElementById('trashIcon').addEventListener('click', async function() {
+      if (confirm('정말로 모든 대여 기록을 초기화하시겠습니까?')) {
+        try {
+          const response = await fetch('/rental', { method: 'DELETE' });
+
+          if (response.ok) {
+            updateAvailableUmbrellas(); // 우산 개수 업데이트
+            document.getElementById('viewRecords').innerHTML = '';
+            document.getElementById('viewRecords').style.display = 'none';
+            isRecordsVisible = false;
+            alert('대여 기록이 성공적으로 삭제되었습니다.');
+          } else {
+            alert('삭제 중 오류가 발생했습니다.');
+          }
+        } catch (error) {
+          console.error('삭제 요청 중 오류 발생:', error);
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

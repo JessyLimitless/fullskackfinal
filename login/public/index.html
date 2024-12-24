@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f3f4f6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 2.5rem;
+            animation: fade-in 1.2s ease-in;
+        }
+
+        p {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #555;
+            animation: fade-in 1.5s ease-in;
+        }
+
+        .input-box {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 15px 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus {
+            border-color: #4CAF50;
+        }
+
+        .input-box label {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            color: #888;
+            transform: translateY(-50%);
+            transition: 0.3s;
+        }
+
+        .input-box input:focus + label,
+        .input-box input:not(:placeholder-shown) + label {
+            top: -10px;
+            color: #4CAF50;
+            font-size: 12px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: #fff;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="login-section" class="login-container">
+        <h1>Login</h1>
+        <form action="/login" method="POST">
+            <div class="input-box">
+                <input type="password" name="password" id="password" placeholder=" " required>
+                <label for="password">Enter Password</label>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p id="error-message" class="error-message">Incorrect password. Try again.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorMessage = document.getElementById('error-message');
+
+            // Check if an error message needs to be displayed
+            if (urlParams.get('error')) {
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

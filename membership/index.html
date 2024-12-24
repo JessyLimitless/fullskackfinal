@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Membership App</title>
+  <style>
+    /* Universal Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 { margin-bottom: 20px; color: #333; }
+
+    input[type="text"], input[type="password"], input[type="email"] {
+      width: 100%; padding: 12px; margin: 10px 0;
+      border: 1px solid #ddd; border-radius: 8px;
+    }
+
+    button {
+      background-color: #3498db; color: #fff;
+      border: none; padding: 12px; width: 100%;
+      border-radius: 8px; font-size: 16px; cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover { background-color: #2980b9; }
+
+    .switch-link { margin-top: 10px; }
+    .switch-link a { color: #3498db; cursor: pointer; }
+
+    .hidden { display: none; }
+
+    /* Welcome Page */
+    .welcome-container { text-align: center; }
+    .welcome-icon { font-size: 60px; color: #3498db; margin-bottom: 20px; }
+    .btn { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="auth-container">
+    <!-- Login Form -->
+    <form id="login-form">
+      <h2>Login</h2>
+      <input type="text" id="login-username" placeholder="Username or Email" required>
+      <input type="password" id="login-password" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <div class="switch-link">Don't have an account? <a id="show-register">Register</a></div>
+    </form>
+
+    <!-- Registration Form -->
+    <form id="register-form" class="hidden">
+      <h2>Register</h2>
+      <input type="text" id="register-username" placeholder="Username" required>
+      <input type="email" id="register-email" placeholder="Email" required>
+      <input type="password" id="register-password" placeholder="Password" required>
+      <button type="submit">Register</button>
+      <div class="switch-link">Already have an account? <a id="show-login">Login</a></div>
+    </form>
+  </div>
+
+  <div class="container hidden" id="welcome-container">
+    <div class="welcome-icon">👋</div>
+    <h2>Welcome, <span id="welcome-username"></span>!</h2>
+    <p>We are glad to have you here. Explore your dashboard or update your profile.</p>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    // View Switch Logic
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const authContainer = document.getElementById('auth-container');
+    const welcomeContainer = document.getElementById('welcome-container');
+    const usernameSpan = document.getElementById('welcome-username');
+
+    document.getElementById('show-register').addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+    });
+
+    document.getElementById('show-login').addEventListener('click', () => {
+      registerForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        usernameSpan.textContent = result.username;
+        authContainer.classList.add('hidden');
+        welcomeContainer.classList.remove('hidden');
+      } else {
+        alert(result.message);
+      }
+    });
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('register-username').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+
+      const response = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+      });
+
+      const result = await response.json();
+      alert(result.message);
+    });
+
+    async function logout() {
+      await fetch('/logout', { method: 'POST' });
+      window.location.reload();
+    }
+  </script>
+
+</body>
+</html>

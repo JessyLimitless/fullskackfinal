@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Simple Chat</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="title">Friends Chat</div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+<script>
+  const ws = new WebSocket('ws://localhost:3000');
+  const chatMessages = document.getElementById('chatMessages');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  // Unique client ID
+  const clientId = Math.random().toString(36).substring(2, 7);
+
+  ws.addEventListener('open', () => {
+    console.log('Connected to server');
+  });
+
+  ws.addEventListener('message', (event) => {
+    try {
+      const { id, text } = JSON.parse(event.data);
+      addMessage(id, text);
+    } catch (err) {
+      console.error('Failed to parse incoming message as JSON:', event.data, err);
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+  messageInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text) return;
+
+    const msg = { id: clientId, text };
+    ws.send(JSON.stringify(msg));
+    messageInput.value = '';
+  }
+
+  function addMessage(senderId, text) {
+    const div = document.createElement('div');
+    // Assign classes based on sender
+    div.classList.add('chat-message', senderId === clientId ? 'you' : 'other');
+    
+    // Create a message text node and a timestamp
+    const messageText = document.createElement('span');
+    messageText.classList.add('message-text');
+    messageText.textContent = text;
+
+    const timestamp = document.createElement('span');
+    timestamp.classList.add('timestamp');
+    timestamp.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    div.appendChild(messageText);
+    div.appendChild(timestamp);
+
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+</script>
+</body>
+</html>

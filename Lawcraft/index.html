@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalCraft - AI 계약서 생성기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+        }
+        .form-section, .preview-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .primary-btn {
+            background-color: #1A73E8;
+            color: white;
+            padding: 15px;
+            width: 100%;
+            border-radius: 8px;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            height: 150px;
+        }
+        #contractPreview {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>LegalCraft</h1>
+        <p>AI로 더 쉽고 빠르게 계약서를 생성하세요!</p>
+    </header>
+
+    <main class="container">
+        <section class="form-section">
+            <form id="contractForm">
+                <textarea id="userInput" placeholder="계약서에 포함할 내용을 입력하세요."></textarea>
+                <button type="submit" class="primary-btn">계약서 생성</button>
+            </form>
+        </section>
+
+        <section class="preview-section">
+            <h2>📄 계약서 미리보기</h2>
+            <div id="contractPreview"></div>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('contractForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const userInput = document.getElementById('userInput').value;
+
+            if (!userInput) {
+                alert("계약서 내용을 입력하세요.");
+                return;
+            }
+
+            const response = await fetch('/generate_contract', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_input: userInput }),
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                alert(result.error);
+            } else {
+                document.getElementById('contractPreview').textContent = result.contract;
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "compromise": "^14.14.3",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "natural": "^8.0.1",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.9.155",
+    "sentence-splitter": "^5.0.0",
+    "tesseract.js": "^5.1.1"
+  },
+  "name": "pdftotext",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

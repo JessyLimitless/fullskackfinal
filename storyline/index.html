@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean Text Viewer</title>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', Arial, sans-serif;
+            background-color: #f9f9fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #555;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .preview {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        .output {
+            background-color: #f4f4f9;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 18px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px; /* Add space between button and content */
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button + button {
+            margin-top: 10px; /* Space between buttons */
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px; /* Space between file input and preview */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Korean Text Viewer</h1>
+
+    <input type="file" id="imageInput" accept="image/*" />
+
+    <div class="preview" id="imagePreview">
+        <p>Upload an image to extract Korean text.</p>
+    </div>
+
+    <button id="convertButton">Convert to Korean Text</button>
+
+    <div class="output" id="output">
+        <p>Extracted text will appear here...</p>
+    </div>
+
+    <button id="saveButton">Save to Diary</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
+<script>
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const output = document.getElementById('output');
+    const convertButton = document.getElementById('convertButton');
+    const saveButton = document.getElementById('saveButton');
+    let extractedText = '';
+
+    imageInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Uploaded Image">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    convertButton.addEventListener('click', () => {
+        if (!imageInput.files[0]) return alert('Please upload an image first.');
+        output.innerText = 'Extracting text... Please wait.';
+
+        Tesseract.recognize(imageInput.files[0], 'kor', { logger: info => console.log(info) })
+            .then(({ data: { text } }) => {
+                extractedText = text.trim();
+                output.innerText = extractedText;
+            })
+            .catch(error => console.error('Error extracting text:', error));
+    });
+
+    saveButton.addEventListener('click', () => {
+        if (!extractedText) return alert('Please extract text before saving.');
+
+        fetch('/save-text', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: extractedText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            window.location.href = '/diary';
+        })
+        .catch(error => console.error('Error saving text:', error));
+    });
+</script>
+
+</body>
+</html>

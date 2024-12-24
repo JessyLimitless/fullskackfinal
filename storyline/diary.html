@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Diary</title>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', Arial, sans-serif;
+            background-color: #f9f9fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #555;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .diary-content {
+            background-color: #f4f4f9;
+            padding: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            margin-bottom: 20px; /* Space between the text and the button */
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button + button {
+            margin-top: 10px; /* Space between buttons */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>My Diary</h1>
+
+    <div class="diary-content" id="diaryContent">Loading diary entries...</div>
+
+    <!-- Back to Main button -->
+    <button id="backButton">Back to Main</button>
+</div>
+
+<script>
+    // Load the diary content from the server
+    fetch('/get-diary')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('diaryContent').innerText = data.text || 'No diary entries yet.';
+    })
+    .catch(error => console.error('Error loading diary:', error));
+
+    // Back to Main button event
+    const backButton = document.getElementById('backButton');
+    backButton.addEventListener('click', () => {
+        window.location.href = '/';
+    });
+</script>
+
+</body>
+</html>
